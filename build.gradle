@@ -34,6 +34,7 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-mail')
 	compile('javax.validation:validation-api:1.1.0.Final')
 	compile('org.hibernate:hibernate-validator:5.2.3.Final')
+    compile fileTree(dir: 'lib', include: '*.jar')
 	testCompile('org.springframework.boot:spring-boot-starter-test') 
 }
 
@@ -47,4 +48,10 @@ eclipse {
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '2.9'
+}
+
+jar {
+  into('lib') {
+    from 'lib'
+  }
 }
