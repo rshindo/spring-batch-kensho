@@ -25,7 +25,7 @@ public class EmployeeItemProcessor implements ItemProcessor<Employee, Employee> 
 		
 		Set<ConstraintViolation<Employee>> result = validator.validate(item);
 		
-		if(result.size() == 1) {
+		if(result.size() == 0) {
 			return item;
 		}
 		

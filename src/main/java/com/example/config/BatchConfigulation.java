@@ -1,6 +1,6 @@
 package com.example.config;
 
-import java.util.List;
+import javax.sql.DataSource;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -12,6 +12,8 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
+import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
@@ -38,7 +40,7 @@ public class BatchConfigulation {
 		reader.setLineMapper(new DefaultLineMapper<Employee>() {{
 			setLineTokenizer(new DelimitedLineTokenizer() {{
 				setNames(new String[] {"departmentCode", "departmentName",
-						"prtId", "name", "email"});
+						"ptrId", "name", "email"});
 			}});
 			setFieldSetMapper(new BeanWrapperFieldSetMapper<Employee>() {{
 				setTargetType(Employee.class);
@@ -54,8 +56,13 @@ public class BatchConfigulation {
 	}
 	
 	@Bean
-	public ItemWriter<Employee> writer() {
-		return (List<? extends Employee> list) -> list.stream().forEach(System.out::println);
+	public ItemWriter<Employee> writer(DataSource dataSource) {
+		JdbcBatchItemWriter<Employee> writer = new JdbcBatchItemWriter<>();
+		writer.setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<Employee>());
+		writer.setDataSource(dataSource);
+		writer.setSql("INSERT INTO employees (department_code, department_name, ptr_id, name, email) "
+				+ "VALUES (:departmentCode, :departmentName, :ptrId, :name, :email)");
+		return writer;
 	}
 	
 	@Bean
