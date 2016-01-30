@@ -6,10 +6,8 @@ import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@AllArgsConstructor
 @Data
 public class Employee {
 	
@@ -29,5 +27,7 @@ public class Employee {
 	
 	@Email
 	private String email;
+	
+	
 
 }
