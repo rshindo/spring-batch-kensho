@@ -22,7 +22,7 @@ public class Employee {
 	@Size(min=6, max=6)
 	private String ptrId;
 	
-	@Pattern(regexp="^.+Å@.+$")
+	@Pattern(regexp="^.+„ÄÄ.+$")
 	private String name;
 	
 	@Email

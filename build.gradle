@@ -22,6 +22,16 @@ jar {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+def defaultEncoding = 'UTF-8'
+
+compileJava {
+	options.encoding = defaultEncoding
+}
+
+compileTestJava {
+	options.encoding = defaultEncoding
+}
+
 repositories {
 	mavenCentral()
 }
@@ -34,6 +44,7 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-mail')
 	compile('javax.validation:validation-api:1.1.0.Final')
 	compile('org.hibernate:hibernate-validator:5.2.3.Final')
+	compile('javax.el:javax.el-api:3.0.0')
     compile fileTree(dir: 'lib', include: '*.jar')
 	testCompile('org.springframework.boot:spring-boot-starter-test') 
 }

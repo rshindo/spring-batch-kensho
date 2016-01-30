@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 
 import com.example.dto.Employee;
+import com.example.processor.EmployeeItemProcessor;
 
 @Configuration
 @EnableBatchProcessing
@@ -49,7 +50,7 @@ public class BatchConfigulation {
 	
 	@Bean
 	public ItemProcessor<Employee, Employee> processor() {
-		return (Employee e1) -> e1; 
+		return new EmployeeItemProcessor(); 
 	}
 	
 	@Bean

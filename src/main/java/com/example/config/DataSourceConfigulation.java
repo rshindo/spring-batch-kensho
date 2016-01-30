@@ -12,7 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 /**
- * DataSource‚Ìİ’è‚ğs‚¢‚Ü‚·.
+ * DataSourceã®è¨­å®šã‚’è¡Œã„ã¾ã™.
  * @author ryo_shindo
  *
  */
@@ -36,7 +36,7 @@ public class DataSourceConfigulation {
 	private String password;
 	
 	/**
-	 * JdbcTemplate‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚ğæ“¾‚µ‚Ü‚·.
+	 * JdbcTemplateã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’å–å¾—ã—ã¾ã™.
 	 * @param dataSource
 	 * @return jdbcTemplate
 	 */
@@ -46,7 +46,7 @@ public class DataSourceConfigulation {
 	}
 	
 	/**
-	 * DataSource‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚ğæ“¾‚µ‚Ü‚·.
+	 * DataSourceã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’å–å¾—ã—ã¾ã™.
 	 * @return dataSource
 	 */
 	@Bean
