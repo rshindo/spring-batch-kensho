@@ -18,6 +18,7 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +32,7 @@ import com.example.processor.EmployeeItemProcessor;
 public class BatchConfigulation {
 	
 	
-	@Bean
+	@Bean(name="employeeItemReader")
 	@JobScope
 	public FlatFileItemReader<Employee> reader(@Value("#{jobParameters['fileName']}") final String fileName) {
 		FlatFileItemReader<Employee> reader = new FlatFileItemReader<>();
@@ -50,12 +51,12 @@ public class BatchConfigulation {
 		return reader;
 	}
 	
-	@Bean
+	@Bean(name="employeeItemProcessor")
 	public ItemProcessor<Employee, Employee> processor() {
 		return new EmployeeItemProcessor(); 
 	}
 	
-	@Bean
+	@Bean(name="employeeItemWriter")
 	public ItemWriter<Employee> writer(DataSource dataSource) {
 		JdbcBatchItemWriter<Employee> writer = new JdbcBatchItemWriter<>();
 		writer.setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<Employee>());
@@ -65,9 +66,11 @@ public class BatchConfigulation {
 		return writer;
 	}
 	
-	@Bean
-	public Step step1(StepBuilderFactory stepBuilderFactory, ItemReader<Employee> reader,
-			ItemWriter<Employee> writer, ItemProcessor<Employee, Employee> processor) {
+	@Bean(name="step1")
+	public Step step1(StepBuilderFactory stepBuilderFactory, 
+			@Qualifier("employeeItemReader") ItemReader<Employee> reader,
+			@Qualifier("employeeItemWriter") ItemWriter<Employee> writer, 
+			@Qualifier("employeeItemProcessor") ItemProcessor<Employee, Employee> processor) {
 		return stepBuilderFactory.get("step1")
 				.<Employee, Employee> chunk(10)
 				.reader(reader)

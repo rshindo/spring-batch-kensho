@@ -8,7 +8,7 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 
 import com.example.dto.Employee;
 
-public class EmployeesItemReader implements ItemReader<Employee> {
+public class EmployeeItemReader implements ItemReader<Employee> {
 
 	@Override
 	public Employee read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
