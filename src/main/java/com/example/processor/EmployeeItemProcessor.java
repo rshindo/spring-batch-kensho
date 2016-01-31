@@ -19,6 +19,8 @@ public class EmployeeItemProcessor implements ItemProcessor<Employee, Employee> 
 
 	@Override
 	public Employee process(Employee item) throws Exception {
+
+		log.info(item.toString());
 		
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 		Validator validator = factory.getValidator();
@@ -33,6 +35,7 @@ public class EmployeeItemProcessor implements ItemProcessor<Employee, Employee> 
 			String message = constraintViolation.getMessage();
 			log.info(message);
 		}
+		
 		
 		return null;
 	}

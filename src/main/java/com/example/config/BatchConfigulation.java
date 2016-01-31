@@ -8,6 +8,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
@@ -26,6 +27,7 @@ import org.springframework.core.io.FileSystemResource;
 
 import com.example.dto.Employee;
 import com.example.processor.EmployeeItemProcessor;
+import com.example.reader.EmployeeItemReader;
 
 @Configuration
 @EnableBatchProcessing
@@ -51,6 +53,15 @@ public class BatchConfigulation {
 		return reader;
 	}
 	
+	@Bean(name="employeeItemReaderSub")
+	@StepScope
+	public EmployeeItemReader readerSub (@Value("#{jobParameters['fileName']}") final String fileName) {
+		EmployeeItemReader reader = new EmployeeItemReader();
+		reader.setSkipLines(1);
+		reader.setFileName(fileName);
+		return reader;
+	}
+	
 	@Bean(name="employeeItemProcessor")
 	public ItemProcessor<Employee, Employee> processor() {
 		return new EmployeeItemProcessor(); 
@@ -68,7 +79,7 @@ public class BatchConfigulation {
 	
 	@Bean(name="step1")
 	public Step step1(StepBuilderFactory stepBuilderFactory, 
-			@Qualifier("employeeItemReader") ItemReader<Employee> reader,
+			@Qualifier("employeeItemReaderSub") ItemReader<Employee> reader,
 			@Qualifier("employeeItemWriter") ItemWriter<Employee> writer, 
 			@Qualifier("employeeItemProcessor") ItemProcessor<Employee, Employee> processor) {
 		return stepBuilderFactory.get("step1")
