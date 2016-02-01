@@ -14,6 +14,7 @@ import org.springframework.batch.item.UnexpectedInputException;
 import com.example.dto.Employee;
 import com.orangesignal.csv.CsvConfig;
 import com.orangesignal.csv.CsvReader;
+import com.orangesignal.csv.annotation.CsvColumnException;
 import com.orangesignal.csv.io.CsvEntityReader;
 
 public class EmployeeItemReader implements ItemReader<Employee> {
@@ -33,12 +34,6 @@ public class EmployeeItemReader implements ItemReader<Employee> {
 	private void init() {
 		config = new CsvConfig();
 		config.setIgnoreEmptyLines(true);
-	}
-	
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		if(entityReader != null) entityReader.close();
 	}
 
 	@Override
@@ -62,6 +57,11 @@ public class EmployeeItemReader implements ItemReader<Employee> {
 			throw new UnexpectedInputException("file not found", e);
 		} catch(IOException e) {
 			throw new NonTransientResourceException("Some problems have occured in file I/O.", e);
+		} finally {
+			// entityがnullであればEOFなので、確実にリソースの開放を行う.
+			if(entity == null && entityReader != null) {
+				entityReader.close();
+			}
 		}
 		
 		return entity;
@@ -75,9 +75,21 @@ public class EmployeeItemReader implements ItemReader<Employee> {
 		config.setSkipLines(skipLines);
 	}
 	
-	private Employee readLine() throws ParseException, NonTransientResourceException, IOException {
-		Employee value = entityReader.read();
-		if(value != null ) value.setLineNumber(++lineCount);
+	/**
+	 * 一行をPOJOにマッピングして取得します.EOFだった場合はnullを戻します.
+	 * @return　Employeeインスタンス
+	 * @throws ParseException
+	 * @throws NonTransientResourceException
+	 * @throws IOException
+	 */
+	private Employee readLine() throws ParseException, IOException {
+		Employee value = null;
+		try {
+			value = entityReader.read();
+			if(value != null ) value.setLineNumber(++lineCount);
+		} catch (CsvColumnException e) {
+			throw new ParseException("faild to parse the line.", e);
+		}
 		return value;
 	}
 
