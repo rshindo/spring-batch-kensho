@@ -22,9 +22,7 @@ public class EmployeeItemReader implements ItemReader<Employee> {
 	
 	private CsvConfig config;
 	
-	private InputStreamReader in;
-	
-	CsvEntityReader<Employee> entityReader;
+	private CsvEntityReader<Employee> entityReader;
 	
 	private int lineCount = 0;
 	
@@ -50,8 +48,8 @@ public class EmployeeItemReader implements ItemReader<Employee> {
 		
 		try {
 			
-			if(in == null) {
-				in = new InputStreamReader(new FileInputStream(this.fileName), "MS932");
+			if(entityReader == null) {
+				InputStreamReader in = new InputStreamReader(new FileInputStream(this.fileName), "MS932");
 				CsvReader csvReader = new CsvReader(in, config);
 				entityReader = CsvEntityReader.newInstance(csvReader, Employee.class);
 			}
@@ -63,7 +61,7 @@ public class EmployeeItemReader implements ItemReader<Employee> {
 		} catch(FileNotFoundException e) {
 			throw new UnexpectedInputException("file not found", e);
 		} catch(IOException e) {
-			throw new NonTransientResourceException("Some problem has occured in file I/O.", e);
+			throw new NonTransientResourceException("Some problems have occured in file I/O.", e);
 		}
 		
 		return entity;
