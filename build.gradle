@@ -44,6 +44,7 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-mail')
 	compile('javax.validation:validation-api:1.1.0.Final')
 	compile('org.hibernate:hibernate-validator:5.2.3.Final')
+	compile('org.springframework.boot:spring-boot-starter-validation')
 	compile('javax.el:javax.el-api:3.0.0')
 	compile('com.orangesignal:orangesignal-csv:2.2.1')
     compile fileTree(dir: 'lib', include: '*.jar')

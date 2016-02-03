@@ -10,6 +10,7 @@ import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
@@ -28,11 +29,18 @@ import org.springframework.core.io.FileSystemResource;
 import com.example.dto.Employee;
 import com.example.processor.EmployeeItemProcessor;
 import com.example.reader.EmployeeItemReader;
+import com.example.tasklet.FindEmployeeTasklet;
 
 @Configuration
 @EnableBatchProcessing
 public class BatchConfigulation {
 	
+	
+	/*
+	 * ================================================
+	 *                   Step1
+	 * ================================================
+	 */
 	
 	@Bean(name="employeeItemReader")
 	@JobScope
@@ -90,11 +98,39 @@ public class BatchConfigulation {
 				.build();
 	}
 	
+
+	/*
+	 * ================================================
+	 *                   Step2
+	 * ================================================
+	 */
+	
+	@Bean(name="tasklet1")
+	public Tasklet tasklet1() {
+		return new FindEmployeeTasklet();
+	}
+	
+	@Bean(name="step2")
+	public Step step2(StepBuilderFactory stepBuilderFactory,
+			@Qualifier("tasklet1") Tasklet tasklet) {
+		return stepBuilderFactory.get("step2")
+				.tasklet(tasklet)
+				.build();
+	}
+	
+	
+	/*
+	 * ================================================
+	 *               Job Definition
+	 * ================================================
+	 */
+	
 	@Bean
-	public Job importUserJob(JobBuilderFactory jobs, Step s1) {
+	public Job importUserJob(JobBuilderFactory jobs, @Qualifier("step1") Step s1, @Qualifier("step2") Step s2) {
 		return jobs.get("importUserJob")
 				.incrementer(new RunIdIncrementer())
 				.flow(s1)
+				.next(s2)
 				.end()
 				.build();
 	}
