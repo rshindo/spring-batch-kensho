@@ -24,6 +24,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.io.FileSystemResource;
 
 import com.example.dto.Employee;
@@ -43,7 +45,7 @@ public class BatchConfigulation {
 	 */
 	
 	@Bean(name="employeeItemReader")
-	@JobScope
+	@StepScope
 	public FlatFileItemReader<Employee> reader(@Value("#{jobParameters['fileName']}") final String fileName) {
 		FlatFileItemReader<Employee> reader = new FlatFileItemReader<>();
 		reader.setEncoding("Shift-JIS");
