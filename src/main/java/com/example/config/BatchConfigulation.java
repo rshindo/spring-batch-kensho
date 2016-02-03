@@ -90,7 +90,7 @@ public class BatchConfigulation {
 			@Qualifier("employeeItemWriter") ItemWriter<Employee> writer, 
 			@Qualifier("employeeItemProcessor") ItemProcessor<Employee, Employee> processor) {
 		return stepBuilderFactory.get("step1")
-				.<Employee, Employee> chunk(10)
+				.<Employee, Employee> chunk(1)
 				.reader(reader)
 				.writer(writer)
 				.processor(processor)

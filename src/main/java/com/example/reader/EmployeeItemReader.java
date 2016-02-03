@@ -6,7 +6,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.ItemStream;
+import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
@@ -17,7 +22,7 @@ import com.orangesignal.csv.CsvReader;
 import com.orangesignal.csv.annotation.CsvColumnException;
 import com.orangesignal.csv.io.CsvEntityReader;
 
-public class EmployeeItemReader implements ItemReader<Employee> {
+public class EmployeeItemReader implements ItemReader<Employee>, ItemStream {
 	
 	private String fileName;
 	
@@ -25,7 +30,11 @@ public class EmployeeItemReader implements ItemReader<Employee> {
 	
 	private CsvEntityReader<Employee> entityReader;
 	
+	private static final Logger log = LoggerFactory.getLogger(EmployeeItemReader.class);
+	
 	private int lineCount = 0;
+	
+	private int restartIndex = 0;
 	
 	public EmployeeItemReader() {
 		init();
@@ -48,9 +57,11 @@ public class EmployeeItemReader implements ItemReader<Employee> {
 				CsvReader csvReader = new CsvReader(in, config);
 				entityReader = CsvEntityReader.newInstance(csvReader, Employee.class);
 			}
-			
+
 			entity = readLine();
-			
+		
+		} catch(ParseException e) {
+			log.info("faild to parse the line. line number:" + lineCount);
 		} catch(UnsupportedEncodingException e) {
 			throw new UnexpectedInputException("encoding not supported.", e);
 		} catch(FileNotFoundException e) {
@@ -83,14 +94,35 @@ public class EmployeeItemReader implements ItemReader<Employee> {
 	 * @throws IOException
 	 */
 	private Employee readLine() throws ParseException, IOException {
+		
 		Employee value = null;
 		try {
 			value = entityReader.read();
 			if(value != null ) value.setLineNumber(++lineCount);
+			
+			// リスタート位置までストリームを進める
+			if(lineCount <= restartIndex) {
+				value = readLine();
+			}
 		} catch (CsvColumnException e) {
 			throw new ParseException("faild to parse the line.", e);
 		}
 		return value;
+	}
+
+	@Override
+	public void open(ExecutionContext executionContext) throws ItemStreamException {
+		this.restartIndex = executionContext.getInt("partnerCsvLine", 0);
+	}
+
+	@Override
+	public void update(ExecutionContext executionContext) throws ItemStreamException {
+		executionContext.putInt("partnerCsvLine", lineCount);
+		
+	}
+
+	@Override
+	public void close() throws ItemStreamException {
 	}
 
 	
