@@ -9,9 +9,13 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.orangesignal.csv.annotation.CsvColumn;
 import com.orangesignal.csv.annotation.CsvEntity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @CsvEntity(header=false)
 public class Employee {
 	
