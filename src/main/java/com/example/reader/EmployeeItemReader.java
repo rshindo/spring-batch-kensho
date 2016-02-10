@@ -8,6 +8,8 @@ import java.io.UnsupportedEncodingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemStream;
@@ -43,6 +45,11 @@ public class EmployeeItemReader implements ItemReader<Employee>, ItemStream {
 	private void init() {
 		config = new CsvConfig();
 		config.setIgnoreEmptyLines(true);
+	}
+	
+	@BeforeStep
+	public void beforeStep(StepExecution stepExecution) {
+		log.info("[EmployeeItemReader] JOB_EXECUTION_ID : " + stepExecution.getJobExecutionId());
 	}
 
 	@Override
@@ -105,6 +112,7 @@ public class EmployeeItemReader implements ItemReader<Employee>, ItemStream {
 				value = readLine();
 			}
 		} catch (CsvColumnException e) {
+			//FIXME パースに失敗したらスキップさせたい
 			throw new ParseException("faild to parse the line.", e);
 		}
 		return value;
