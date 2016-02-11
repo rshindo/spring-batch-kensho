@@ -4,6 +4,7 @@ import javax.sql.DataSource;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -26,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 
 import com.example.dto.Employee;
+import com.example.listener.Step1ExecutionListener;
 import com.example.processor.EmployeeItemProcessor;
 import com.example.reader.EmployeeItemReader;
 import com.example.tasklet.FindEmployeeTasklet;
@@ -83,12 +85,19 @@ public class BatchConfigulation {
 		return writer;
 	}
 	
+	@Bean(name="step1ExecutionListener")
+	public StepExecutionListener listener1() {
+		return new Step1ExecutionListener();
+	}
+	
 	@Bean(name="step1")
 	public Step step1(StepBuilderFactory stepBuilderFactory, 
 			@Qualifier("employeeItemReaderSub") ItemReader<Employee> reader,
 			@Qualifier("employeeItemWriter") ItemWriter<Employee> writer, 
-			@Qualifier("employeeItemProcessor") ItemProcessor<Employee, Employee> processor) {
+			@Qualifier("employeeItemProcessor") ItemProcessor<Employee, Employee> processor,
+			@Qualifier("step1ExecutionListener") StepExecutionListener listener) {
 		return stepBuilderFactory.get("step1")
+				.listener(listener)
 				.<Employee, Employee> chunk(1)
 				.reader(reader)
 				.writer(writer)
