@@ -98,7 +98,7 @@ public class BatchConfigulation {
 			@Qualifier("step1ExecutionListener") StepExecutionListener listener) {
 		return stepBuilderFactory.get("step1")
 				.listener(listener)
-				.<Employee, Employee> chunk(1)
+				.<Employee, Employee> chunk(10)
 				.reader(reader)
 				.writer(writer)
 				.processor(processor)

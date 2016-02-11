@@ -21,6 +21,7 @@ import org.springframework.batch.item.UnexpectedInputException;
 import com.example.dto.Employee;
 import com.orangesignal.csv.CsvConfig;
 import com.orangesignal.csv.CsvReader;
+import com.orangesignal.csv.CsvTokenException;
 import com.orangesignal.csv.annotation.CsvColumnException;
 import com.orangesignal.csv.io.CsvEntityReader;
 
@@ -45,6 +46,7 @@ public class EmployeeItemReader implements ItemReader<Employee>, ItemStream {
 	private void init() {
 		config = new CsvConfig();
 		config.setIgnoreEmptyLines(true);
+		config.setVariableColumns(false);
 	}
 	
 	@BeforeStep
@@ -67,8 +69,6 @@ public class EmployeeItemReader implements ItemReader<Employee>, ItemStream {
 
 			entity = readLine();
 		
-		} catch(ParseException e) {
-			log.info("faild to parse the line. line number:" + lineCount);
 		} catch(UnsupportedEncodingException e) {
 			throw new UnexpectedInputException("encoding not supported.", e);
 		} catch(FileNotFoundException e) {
@@ -94,27 +94,38 @@ public class EmployeeItemReader implements ItemReader<Employee>, ItemStream {
 	}
 	
 	/**
-	 * 一行をPOJOにマッピングして取得します.EOFだった場合はnullを戻します.
+	 * 一行を一行読み込み、POJOにマッピングして取得します.<br>
+	 * パースに失敗した場合は次の行を読み込んでPOJOを戻し、EOFだった場合はnullを戻します.
+	 * 
 	 * @return　Employeeインスタンス
-	 * @throws ParseException
-	 * @throws NonTransientResourceException
-	 * @throws IOException
+	 * @throws IOException ファイル読み込みに異常が発生した場合
 	 */
-	private Employee readLine() throws ParseException, IOException {
+	private Employee readLine() throws IOException {
 		
 		Employee value = null;
+		boolean error = false;
 		try {
+			++lineCount;
 			value = entityReader.read();
-			if(value != null ) value.setLineNumber(++lineCount);
+			if(value != null ) value.setLineNumber(lineCount);
 			
 			// リスタート位置までストリームを進める
 			if(lineCount <= restartIndex) {
 				value = readLine();
 			}
 		} catch (CsvColumnException e) {
-			//FIXME パースに失敗したらスキップさせたい
-			throw new ParseException("faild to parse the line.", e);
+			log.warn("!! failed to parse a line " + lineCount);
+			error = true;
+		} catch(CsvTokenException e) {
+			log.warn("!! failed to parse a line " + lineCount + " : number of columns doesn't match.");
+			error = true;
 		}
+		
+		//パースに失敗した場合は次の行を読み込む
+		if(error) {
+			value = readLine();			
+		}
+		
 		return value;
 	}
 
