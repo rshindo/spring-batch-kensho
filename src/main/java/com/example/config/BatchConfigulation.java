@@ -20,11 +20,14 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import com.example.dto.Employee;
 import com.example.listener.Step1ExecutionListener;
@@ -35,13 +38,30 @@ import com.example.tasklet.FindEmployeeTasklet;
 @Configuration
 @EnableBatchProcessing
 public class BatchConfigulation {
-	
+
+	/*
+	 * ================================================
+	 *          Validator Configuration
+	 * ================================================
+	 */
+
+	@Autowired
+	private MessageSource messageSource;
+
+	@Bean
+	public LocalValidatorFactoryBean validatorBean() {
+		LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+		bean.setValidationMessageSource(messageSource);
+		return bean;
+	}
+
+
 	/*
 	 * ================================================
 	 *                   Step1
 	 * ================================================
 	 */
-	
+
 	@Bean(name="employeeItemReader")
 	@StepScope
 	public FlatFileItemReader<Employee> reader(@Value("#{jobParameters['fileName']}") final String fileName) {
@@ -60,7 +80,7 @@ public class BatchConfigulation {
 		reader.setLinesToSkip(1);
 		return reader;
 	}
-	
+
 	@Bean(name="employeeItemReaderSub")
 	@StepScope
 	public EmployeeItemReader readerSub (@Value("#{jobParameters['fileName']}") final String fileName) {
@@ -69,12 +89,12 @@ public class BatchConfigulation {
 		reader.setFileName(fileName);
 		return reader;
 	}
-	
+
 	@Bean(name="employeeItemProcessor")
 	public ItemProcessor<Employee, Employee> processor() {
-		return new EmployeeItemProcessor(); 
+		return new EmployeeItemProcessor();
 	}
-	
+
 	@Bean(name="employeeItemWriter")
 	public ItemWriter<Employee> writer(DataSource dataSource) {
 		JdbcBatchItemWriter<Employee> writer = new JdbcBatchItemWriter<>();
@@ -84,16 +104,16 @@ public class BatchConfigulation {
 				+ "VALUES (:departmentCode, :departmentName, :ptrId, :name, :email)");
 		return writer;
 	}
-	
+
 	@Bean(name="step1ExecutionListener")
 	public StepExecutionListener listener1() {
 		return new Step1ExecutionListener();
 	}
-	
+
 	@Bean(name="step1")
-	public Step step1(StepBuilderFactory stepBuilderFactory, 
+	public Step step1(StepBuilderFactory stepBuilderFactory,
 			@Qualifier("employeeItemReaderSub") ItemReader<Employee> reader,
-			@Qualifier("employeeItemWriter") ItemWriter<Employee> writer, 
+			@Qualifier("employeeItemWriter") ItemWriter<Employee> writer,
 			@Qualifier("employeeItemProcessor") ItemProcessor<Employee, Employee> processor,
 			@Qualifier("step1ExecutionListener") StepExecutionListener listener) {
 		return stepBuilderFactory.get("step1")
@@ -104,19 +124,19 @@ public class BatchConfigulation {
 				.processor(processor)
 				.build();
 	}
-	
+
 
 	/*
 	 * ================================================
 	 *                   Step2
 	 * ================================================
 	 */
-	
+
 	@Bean(name="tasklet1")
 	public Tasklet tasklet1() {
 		return new FindEmployeeTasklet();
 	}
-	
+
 	@Bean(name="step2")
 	public Step step2(StepBuilderFactory stepBuilderFactory,
 			@Qualifier("tasklet1") Tasklet tasklet) {
@@ -124,14 +144,14 @@ public class BatchConfigulation {
 				.tasklet(tasklet)
 				.build();
 	}
-	
-	
+
+
 	/*
 	 * ================================================
 	 *               Job Definition
 	 * ================================================
 	 */
-	
+
 	@Bean
 	public Job importUserJob(JobBuilderFactory jobs, @Qualifier("step1") Step s1, @Qualifier("step2") Step s2) {
 		return jobs.get("importUserJob")
@@ -141,5 +161,6 @@ public class BatchConfigulation {
 				.end()
 				.build();
 	}
+
 
 }
