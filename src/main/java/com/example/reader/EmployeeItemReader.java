@@ -133,6 +133,7 @@ public class EmployeeItemReader implements ItemReader<Employee>, ItemStream {
 		try {
 			if(entityReader != null) {
 				entityReader.close();
+				entityReader = null;
 			}
 		} catch (IOException e) {
 			throw new ItemStreamException("cannot close file", e);
